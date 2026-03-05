@@ -16,37 +16,69 @@ export class RssService {
 
   constructor(){
     this.firestore.getUserFeeds().then(feeds => {
-      const firstFeed = feeds[0];
-      this.getNews(firstFeed)
+      // const firstFeed = feeds[0];
+      // this.getNews(firstFeed)
+      this.getNews(feeds)
     });
   }
 
-  getNews(firstFeed: Feed) {
-    return fetch(firstFeed.url)
-    .then(resp => resp.text())
-    .then(text => this.parseRss(text));
-  }
+  getNews(feeds: Feed[]) {
 
-  parseRss(text: string): any {
-    const latestNews: News[] = [];
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(text, 'application/xml');
+    const requests = [];
 
-    const items = xml.querySelectorAll('item');
+    for (const feed of feeds) {
+      const request =
+      fetch(feed.url)
+      .then(async resp =>{
+        const origin = feed.name;
+        const xml = await resp.text();
+        return {origin, xml};
+      })
+      .catch(err => "");
 
-    for (let i = 0; i < items.length; i++) {
-      const element = items[i];
-      const news: News = {
-        title: element.querySelector('title')?.innerHTML!,
-        description: element.querySelector('description')?.innerHTML!,
-        url: element.querySelector('link')?.innerHTML!,
-      }
-      latestNews.push(news);
+      requests.push(request);
     }
+
+    Promise.all(requests).then(res => 
+      this.parseRss(res));
+
+    };
+  
+
+  parseRss(responses: any[]): any {
+    const latestNews: News[] = [];
+    
+
+    for (const response of responses) {
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(response.xml, 'application/xml');  
+      const items = xml.querySelectorAll('item');
+
+      for (let i = 0; i < items.length; i++) {
+        const element = items[i];
+        const news: News = {
+          title: element.querySelector('title')?.innerHTML!,
+          description: element.querySelector('description')?.innerHTML!,
+          url: element.querySelector('link')?.innerHTML!,
+          origin: response.origin,
+        };
+        const dateString = element.querySelector('pubDate')?.innerHTML;
+        if (dateString) {
+          news.pubDate = new Date(dateString).toISOString();
+        }
+        latestNews.push(news);
+      }
+    }
+
+    latestNews.sort((a, b) => {
+      if (a.pubDate && b.pubDate) {
+        return new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime();
+      } else {
+        return 0;
+      }
+    });
 
     this.news.set(latestNews);
   }
-
-
-  
 }
+

@@ -8,12 +8,17 @@ export class FirebaseService {
   
 
   firebaseConfig = {
-    apiKey: "AIzaSyAs-Ng4OHrHvjeLA1W3Z7Btl2ho4YHdXIA",
-    authDomain: "feed-reader-5e320.firebaseapp.com",
-    projectId: "feed-reader-5e320",
-    storageBucket: "feed-reader-5e320.firebasestorage.app",
-    messagingSenderId: "211840088399",
-    appId: "1:211840088399:web:c832cef1b9e3a5a48ced3a"
+   apiKey: "AIzaSyACZPL8MI2rVjugetdvA5tUZAs-uWJH-HQ",
+
+  authDomain: "feed-reader-47a09.firebaseapp.com",
+
+  projectId: "feed-reader-47a09",
+
+  storageBucket: "feed-reader-47a09.firebasestorage.app",
+
+  messagingSenderId: "392319237961",
+
+  appId: "1:392319237961:web:cb06b1558de01dba396498"
   };
 
   app: FirebaseApp;
